@@ -8,17 +8,17 @@ local ball = {
   size = 20,
   vy = 0,
   speed = 300,
-  jumpForce = -400,
+  jumpForce = -300,
   yground = h,
 }
-
+local size = 100
 function generateColor()
   math.randomseed(os.time())
-  for i=0,37 do
+  for i=0,size do
     grid[i] = {}
 
-    for k =0,37 do
-      local r = math.random(0,(37-k) *2)/37
+    for k =0,size do
+      local r = math.random(0,(size-k)*4)/size
       -- r = (math.floor(r))/10
       grid[i][k] = r
     end
@@ -27,15 +27,14 @@ end
 local points = {}
 function grid:loadGrid()
   -- local points = {table.unpack({})}
-  local size=37
 
   for i=0, size, 1 do
     local xoffset = i*25
-    local drawx = (w/35) + xoffset
+    local drawx =  xoffset
     points[i]= {}
     for k=0, size, 1 do
       local yoffset = k * 25
-      local drawy = (h/35) + yoffset
+      local drawy = -10*size + yoffset
       points[i][k] = {x = drawx,y = drawy}
       -- print(points[i][k].x, points[i][k].y)
       -- print(#points, #points[0] , 37*37)
@@ -46,16 +45,16 @@ end
 
 end
 function grid:drawGrid()
-  for i=0, 37, 1 do
+  for i=0, size, 1 do
     -- local xoffset = i*25
-    for k=0, 37,1 do
+    for k=0, size,1 do
       -- local yoffset = k*25
       local randomNumber = grid[i][k]
       local bluecolor = 0
       if randomNumber <0.07 then
         bluecolor=1
       end
-      love.graphics.setColor(randomNumber,  randomNumber, bluecolor)
+      love.graphics.setColor( randomNumber,randomNumber*0.50, bluecolor - randomNumber)
       -- print("AT DRAWING AREA ",self.yoffset)
       love.graphics.rectangle("line", points[i][k].x , points[i][k].y, 20, 20)
     end
@@ -63,18 +62,24 @@ function grid:drawGrid()
 end
 
 function grid:updateGrid(dt)
-  if ball.y < 250 then
-    for i=0, 37, 1 do
-      for k=0,37,1 do
-        points[i][k].y = points[i][k].y +55 *dt
+  if ball.y < h/4 then
+    for i=0, size, 1 do
+      for k=0,size,1 do
+        points[i][k].y = points[i][k].y +155 *dt
       end
     end
-  -- end
-    -- self.yoffset = self.yoffset + 100
-  -- else
-    -- self.cameraSpeed = 0
+    ball.y = ball.y + 155 * dt
   end
-end
+  -- temporary code( there will be a red barrier in the ground if you touch it you lose)
+    if ball.y > 3*h/4 then
+      for y=0, size, 1 do
+        for j=0,size,1 do
+          points[y][j].y = points[y][j].y -155 *dt
+        end
+      end
+      ball.y = ball.y - 10 * dt
+    end
+  end
 function ball:draw()
   love.graphics.setColor(1,1, 1)
   -- love.graphics.setLineWidth(6)
@@ -87,16 +92,14 @@ function ball:checkBallonGrid()
   local right  = self.x + self.size/2
   local bottom = self.y + self.size/2
   self.yground = h
-  for i=0,37 do
+  for i=0,size do
     -- local xoffset = i*25
-    
-    for k =0,37 do
+    for k =0,size do
       local xGrid = points[i][k].x
       -- local yoffset = k*25
       local  yGrid = points[i][k].y
       r = grid[i][k]
       if r < 0.07 then
-
         local overlapX =
         right > xGrid and
         left < xGrid + 20
